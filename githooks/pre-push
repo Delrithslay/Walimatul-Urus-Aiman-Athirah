@@ -1,0 +1,20 @@
+#!/bin/sh
+# Client-side pre-push hook (bash)
+# Blocks pushes to `master` to avoid accidental updates.
+
+if [ "$ALLOW_PUSH_MASTER" = "1" ]; then
+  exit 0
+fi
+
+while read local_ref local_sha remote_ref remote_sha
+do
+  case "$local_ref" in
+    refs/heads/master)
+      echo "Pushing to 'master' is blocked by local hook. Create a branch and push that instead." 1>&2
+      echo "To override locally (not recommended): ALLOW_PUSH_MASTER=1 git push ..." 1>&2
+      exit 1
+      ;;
+  esac
+done
+
+exit 0
