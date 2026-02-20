@@ -1,0 +1,394 @@
+:root {
+	--primary: #e6be8a; 
+	--secondary: #fce4ec; 
+	--text-main: #5d4037;
+	--phone-width: 430px; /* Lebar Maksima Paparan Telefon */
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap');
+
+.font-cinzel { font-family: 'Cinzel', serif; }
+.font-playfair { font-family: 'Playfair Display', serif; }
+.font-montserrat { font-family: 'Montserrat', sans-serif; }
+
+.gold-gradient-text {
+	background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+
+:root {
+	--primary: #e6be8a; 
+	--secondary: #fce4ec; 
+	--text-main: #5d4037;
+	--phone-width: 430px; /* Lebar Maksima Paparan Telefon */
+}
+
+body {
+	font-family: 'Montserrat', sans-serif;
+	background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+				url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1920&q=80');
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed;
+	color: var(--text-main);
+	overflow: hidden; /* Kunci scroll awal */
+	display: flex;
+	justify-content: center;
+	min-height: 100vh;
+	margin: 0;
+}
+
+/* --- MOBILE VIEWPORT WRAPPER --- */
+#mobile-viewport {
+	width: 100%;
+	max-width: var(--phone-width);
+	background-color: #fffafb;
+	background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+	min-height: 100vh;
+	position: relative;
+	box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Shadow untuk nampak macam terapung */
+	overflow: hidden;
+	padding-bottom: 90px; /* Ruang untuk nav */
+}
+
+.font-cursive { font-family: 'Pinyon Script', cursive; }
+.font-serif { font-family: 'Playfair Display', serif; }
+.font-jawi { font-family: 'Amiri', serif; }
+
+/* --- Envelope / Card Overlay --- */
+#envelope-overlay {
+	position: absolute; /* Tukar dari fixed ke absolute supaya ikut wrapper */
+	inset: 0;
+	z-index: 200;
+	height: 100vh; /* Full height of wrapper initially */
+	background: rgba(0,0,0,0.85);
+	backdrop-filter: blur(5px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 1.5s cubic-bezier(0.7, 0, 0.3, 1), opacity 1.5s ease;
+}
+
+.envelope-card {
+	background: #fffdf5;
+	padding: 3rem 1.5rem;
+	border-radius: 10px;
+	box-shadow: 0 30px 70px rgba(0,0,0,0.3);
+	text-align: center;
+	border: 1px solid #e2e2e2;
+	position: relative;
+	width: 85%;
+	min-height: 550px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	animation: cardFloat 6s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-10px); }
+}
+
+/* Bingkai Emas Klasik */
+.classic-border {
+	position: absolute;
+	top: 15px; bottom: 15px; left: 15px; right: 15px;
+	border: 2px solid var(--primary);
+	pointer-events: none;
+	z-index: 10;
+}
+.classic-border::before {
+	content: ""; position: absolute;
+	top: 4px; bottom: 4px; left: 4px; right: 4px;
+	border: 1px solid var(--primary); opacity: 0.5;
+}
+
+/* Bunga Sudut */
+.corner-flower {
+	position: absolute; width: 110px; z-index: 20; opacity: 0.95;
+	filter: drop-shadow(2px 6px 10px rgba(0,0,0,0.12));
+	transform-origin: center center;
+}
+.top-left { top: -6px; left: -6px; transform: rotate(0deg); }
+.top-right { top: -6px; right: -6px; transform: rotate(90deg); }
+.bottom-left { bottom: -6px; left: -6px; transform: rotate(270deg); }
+.bottom-right { bottom: -6px; right: -6px; transform: rotate(180deg); }
+
+.opened {
+	transform: translateY(-100%);
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* --- Magical Items --- */
+.magical-item {
+	position: fixed; 
+	pointer-events: none;
+	z-index: 150;
+}
+
+.petal {
+	background-color: #ffcdd2;
+	border-radius: 150% 0 150% 0;
+	opacity: 0.6;
+	animation: fall linear infinite;
+}
+
+.butterfly {
+	font-size: 20px;
+	filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Elegant butterfly styling and wing flap */
+.butterfly-anim {
+	position: fixed;
+	pointer-events: none;
+	z-index: 160;
+	will-change: transform, left, top;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 26px;
+	transform-origin: center center;
+}
+
+/* gentle wing/flap and subtle scale */
+.butterfly-anim::after {
+	content: "";
+}
+@keyframes butterflyFlap {
+	0% { transform: translateY(0) rotate(0deg) scale(1); }
+	25% { transform: translateY(-6px) rotate(-6deg) scale(1.03); }
+	50% { transform: translateY(0) rotate(0deg) scale(1); }
+	75% { transform: translateY(-4px) rotate(6deg) scale(1.02); }
+	100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+.butterfly-anim.flap {
+	animation: butterflyFlap 1.8s ease-in-out infinite;
+}
+
+@keyframes fall {
+	0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+	10% { opacity: 0.8; }
+	90% { opacity: 0.8; }
+	100% { transform: translate(50px, 110vh) rotate(360deg); opacity: 0; }
+}
+
+.burst { animation: burstEffect 3s ease-out forwards; }
+@keyframes burstEffect {
+	0% { transform: translate(0, 0) scale(0); opacity: 1; }
+	100% { transform: translate(var(--move-x), var(--move-y)) scale(1.5) rotate(var(--rot, 0deg)); opacity: 0; }
+}
+
+.hero-bg {
+	background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), 
+				url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1920&q=80');
+	background-size: cover;
+	background-position: center;
+	height: 80vh; /* Adjust for phone feel */
+}
+
+/* --- Leaf border decoration --- */
+.envelope-card { overflow: visible; }
+.leaf {
+	position: absolute;
+	width: 36px;
+	height: 22px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	pointer-events: none;
+	opacity: 0.95;
+	transform-origin: center center;
+	will-change: transform, left, top, opacity;
+}
+
+/* simple green leaf SVG as background (data URI) */
+.leaf.leaf-img { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='80' viewBox='0 0 120 80'><path d='M10 40 Q40 10 70 20 Q100 30 110 40 Q100 50 70 60 Q40 70 10 40 Z' fill='%23349e3f' stroke='%23286b2b' stroke-width='2' fill-opacity='0.95'/></svg>"); }
+
+/* Fern leaf variant */
+.leaf.fern { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='80' viewBox='0 0 160 80'><g fill='%233c8b3a' stroke='%23286b2b' stroke-width='1'><path d='M10 40 C40 10 60 10 90 30 C70 15 60 20 50 25 C65 18 80 12 98 18 C75 22 65 30 55 36 C72 28 92 24 110 34 C85 36 70 46 54 54 C76 44 98 42 120 54 C100 58 82 66 60 70 C86 66 108 64 140 72' /></g></svg>"); background-size: contain; }
+
+/* Vine leaf small cluster */
+.leaf.vine { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='80' viewBox='0 0 120 80'><g fill='%233fa46a' stroke='%23286b2b' stroke-width='1'><path d='M5 60 C30 30 50 20 80 18 C60 28 48 38 36 48 C58 34 82 24 106 20' /><circle cx='30' cy='40' r='6' fill='%233fa46a'/><circle cx='58' cy='36' r='5' fill='%232f8a47'/><circle cx='86' cy='28' r='6' fill='%233fa46a'/></g></svg>"); background-size: contain; }
+
+.leaf.leaf-img, .leaf.fern, .leaf.vine { background-size: contain; }
+
+/* small flower replacement for the diamond */
+.small-flower {
+	width: 12px; height: 12px; display: inline-block; background-size: contain; background-repeat: no-repeat; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><circle cx='32' cy='32' r='6' fill='%23ffda8a'/><path d='M32 6 C38 18 52 18 56 32 C52 46 38 46 32 58 C26 46 12 46 8 32 C12 18 26 18 32 6 Z' fill='%23f59e8a' stroke='%23d9795a' stroke-width='1'/></svg>"); margin:0 auto; }
+
+@keyframes leafDrift {
+	0% { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+	30% { transform: translate(var(--mid-x, 20px), var(--mid-y, -20px)) rotate(var(--mid-rot, 20deg)) scale(1.05); }
+	100% { transform: translate(var(--end-x, 120px), var(--end-y, -120px)) rotate(var(--rot, 360deg)) scale(0.9); opacity: 0; }
+}
+
+/* subtle wobble while drifting */
+@keyframes leafWobble {
+	0% { transform: translate(0,0) rotate(-6deg); }
+	50% { transform: translate(6px,-6px) rotate(6deg); }
+	100% { transform: translate(0,0) rotate(-6deg); }
+}
+
+.leaf.wobble { animation: leafWobble 1.8s ease-in-out infinite; }
+
+
+/* Countdown layout fixes: keep the timer centered and stable */
+#countdown {
+	justify-items: center;
+	align-items: center;
+	max-width: 540px;
+	margin: 0 auto;
+}
+#countdown > div {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+@media (max-width: 480px) {
+	#countdown { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
+	.section-padding { padding-top: 40px; padding-bottom: 40px; }
+}
+
+/* --- BOTTOM NAV (FIXED RELATIVE TO VIEWPORT WRAPPER LOGIC) --- */
+.bottom-nav {
+	position: fixed;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 90%;
+	max-width: 400px; /* Constrain width to wrapper */
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(10px);
+	padding: 10px 15px;
+	border-radius: 50px;
+	box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+	display: flex;
+	gap: 8px;
+	z-index: 100;
+	border: 1px solid var(--primary);
+}
+
+.nav-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-size: 8px;
+	text-transform: uppercase;
+	font-weight: 700;
+	color: #8d6e63;
+	transition: 0.3s;
+	cursor: pointer;
+	min-width: 45px;
+	text-decoration: none;
+	flex: 1;
+}
+
+.nav-item:hover { color: var(--primary); }
+
+.section-padding {
+	padding-top: 60px;
+	padding-bottom: 60px;
+}
+
+.music-btn {
+	position: fixed;
+	top: 25px;
+	left: 50%; /* Center based on screen */
+	margin-left: 150px; /* Push to right edge of the 430px wrapper (approx) */
+	z-index: 250;
+	background: white;
+	border: 1px solid var(--primary);
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+	transition: transform 0.2s;
+}
+    
+/* Adjust music button for small screens */
+@media (max-width: 450px) {
+	.music-btn {
+		left: auto;
+		right: 20px;
+		margin-left: 0;
+	}
+}
+
+.music-btn:active { transform: scale(0.9); }
+
+.photo-card {
+	aspect-ratio: 1/1;
+	overflow: hidden;
+	border: 4px solid white;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+	border-radius: 12px;
+	transition: transform 0.3s ease;
+	position: relative;
+}
+.photo-card:hover { transform: scale(1.02); }
+    
+.photo-overlay {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(transparent, rgba(0,0,0,0.7));
+	padding: 10px;
+	color: white;
+	font-size: 10px;
+	font-weight: 600;
+}
+
+.reveal { opacity: 0; transform: translateY(30px); transition: all 1s ease-out; }
+.reveal.active { opacity: 1; transform: translateY(0); }
+    
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.toast-enter { animation: fadeIn 0.3s ease-out forwards; }
+
+.pagination-btn {
+	background-color: white; border: 1px solid #dcdcdc; color: #5d4037;
+	padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold;
+	text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+}
+.pagination-btn:hover:not(:disabled) {
+	background-color: var(--primary);
+	color: white;
+	border-color: var(--primary);
+}
+.pagination-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+    
+/* Timeline */
+.timeline-item {
+	position: relative;
+	padding-left: 2rem;
+	padding-bottom: 2.5rem;
+	border-left: 2px solid var(--primary);
+}
+.timeline-item:last-child {
+	border-left: 2px solid transparent;
+}
+.timeline-dot {
+	position: absolute;
+	left: -0.6rem;
+	top: 0;
+	width: 1.2rem;
+	height: 1.2rem;
+	background-color: var(--primary);
+	border: 3px solid #fff;
+	border-radius: 50%;
+}
+
