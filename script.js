@@ -16,6 +16,25 @@ function showToast(message) {
   }, 3000);
 }
 
+// --- Firebase: anonymous auth + helper for Firestore writes ---
+async function initFirebaseAuth() {
+  if (window.firebase && firebase.auth) {
+    try {
+      await firebase.auth().signInAnonymously();
+      console.log('Firebase: signed in anonymously');
+    } catch (e) {
+      console.warn('Firebase anonymous sign-in failed:', e);
+    }
+  } else {
+    console.log('Firebase SDK not available yet');
+  }
+}
+
+// call init when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  initFirebaseAuth();
+});
+
 // --- Intersection Observer for Scroll Animations ---
 const observerOptions = { threshold: 0.1 };
 const observer = new IntersectionObserver((entries) => {
@@ -637,6 +656,25 @@ document.getElementById('rsvpFormCombined').addEventListener('submit', function(
   document.getElementById('wishesContainer').prepend(card);
     
   showToast(`Terima kasih ${name}! Jumpa nanti! ✨`);
+  // attempt to store RSVP in Firestore
+  try {
+    if (window.firebase && firebase.firestore) {
+      const doc = {
+        name: name || null,
+        wish: wish || null,
+        count: parseInt(count) || 0,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      firebase.firestore().collection('rsvps').add(doc)
+        .then(() => console.log('RSVP saved to Firestore'))
+        .catch(err => console.warn('Failed to save RSVP to Firestore:', err));
+    } else {
+      console.warn('Firestore SDK not available; RSVP not saved to DB.');
+    }
+  } catch (err) {
+    console.error('Error storing RSVP:', err);
+  }
+
   this.reset();
 });
 
