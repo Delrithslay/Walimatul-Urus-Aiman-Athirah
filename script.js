@@ -20,8 +20,9 @@ function showToast(message) {
 async function initFirebaseAuth() {
   if (window.firebase && firebase.auth) {
     try {
-      await firebase.auth().signInAnonymously();
-      console.log('Firebase: signed in anonymously');
+        // Keep anonymous sign-in available for public features
+        await firebase.auth().signInAnonymously();
+        console.log('Firebase: signed in anonymously');
     } catch (e) {
       console.warn('Firebase anonymous sign-in failed:', e);
     }
@@ -33,7 +34,169 @@ async function initFirebaseAuth() {
 // call init when page loads
 document.addEventListener('DOMContentLoaded', () => {
   initFirebaseAuth();
+  // initialize auth UI handlers
+  setupAuthUI();
 });
+
+// --- App constants ---
+const LIVE_FEED_PRICE = 50; // MYR
+
+// --- Auth & Dashboard logic ---
+function setupAuthUI() {
+  document.getElementById('btnSignIn').addEventListener('click', openAuthModal);
+  document.getElementById('btnSignOut').addEventListener('click', () => firebase.auth().signOut());
+  document.getElementById('btnSaveCard').addEventListener('click', saveCard);
+  document.getElementById('btnBuyLiveFeed').addEventListener('click', buyLiveFeed);
+  const addAdminBtn = document.getElementById('btnAddAdmin');
+  if (addAdminBtn) addAdminBtn.addEventListener('click', () => {
+    const email = document.getElementById('newAdminEmail').value.trim();
+    if (!email) return showToast('Sila masukkan email untuk ditambah sebagai admin');
+    addAdminEmail(email);
+  });
+
+  // monitor auth state
+  if (firebase && firebase.auth) {
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        // show dashboard link and sign-out
+        document.getElementById('userEmail').classList.remove('hidden');
+        document.getElementById('btnSignIn').classList.add('hidden');
+        document.getElementById('btnSignOut').classList.remove('hidden');
+        document.getElementById('btnDashboard').classList.remove('hidden');
+        // display email if available
+        const email = user.email || user.displayName || 'Signed in';
+        document.getElementById('userEmail').innerText = email;
+        // load user's card
+        await loadCardForCurrentUser();
+        // check admin
+        const isAdmin = await checkIsAdmin(user);
+        if (isAdmin) document.getElementById('adminPanel').classList.remove('hidden');
+        else document.getElementById('adminPanel').classList.add('hidden');
+      } else {
+        document.getElementById('userEmail').classList.add('hidden');
+        document.getElementById('btnSignIn').classList.remove('hidden');
+        document.getElementById('btnSignOut').classList.add('hidden');
+        document.getElementById('btnDashboard').classList.add('hidden');
+        document.getElementById('dashboard').classList.add('hidden');
+      }
+    });
+  }
+}
+
+function openAuthModal() {
+  // simple prompt-based sign-in for now (email/password + google)
+  const choice = confirm('Sign in with Google? Click Cancel to use Email/Password.');
+  if (choice) {
+    signInWithGoogle();
+  } else {
+    const email = prompt('Email:');
+    const pass = prompt('Password:');
+    if (!email || !pass) return showToast('Email & password required');
+    // attempt sign in, if fails offer to create account
+    firebase.auth().signInWithEmailAndPassword(email, pass).then(() => showToast('Signed in'))
+      .catch(async (err) => {
+        const create = confirm('Sign-in failed. Create account with these credentials?');
+        if (create) {
+          try {
+            await firebase.auth().createUserWithEmailAndPassword(email, pass);
+            showToast('Account created and signed in');
+          } catch (e) { showToast('Failed to create account'); console.warn(e); }
+        } else {
+          console.warn(err);
+        }
+      });
+  }
+}
+
+async function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await firebase.auth().signInWithPopup(provider);
+    showToast('Signed in with Google');
+  } catch (e) { console.error(e); showToast('Google sign-in failed'); }
+}
+
+// --- Firestore: card saving/loading ---
+async function saveCard() {
+  const user = firebase.auth().currentUser;
+  if (!user) return showToast('Sila sign in terlebih dahulu');
+  const uid = user.uid;
+  const data = {
+    ownerUid: uid,
+    title: document.getElementById('cardTitle').value || null,
+    ucapan: document.getElementById('cardUcapan').value || null,
+    tarikh: document.getElementById('cardTarikh').value || null,
+    masa: document.getElementById('cardMasa').value || null,
+    lokasi: document.getElementById('cardLokasi').value || null,
+    tentatif: (document.getElementById('cardTentatif').value || '').split('\n').map(s=>s.trim()).filter(Boolean),
+    liveFeedRequested: false,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    await firebase.firestore().collection('cards').doc(uid).set(data, { merge: true });
+    showToast('Kad telah disimpan');
+    // reveal dashboard area
+    document.getElementById('dashboard').classList.remove('hidden');
+  } catch (e) { console.error(e); showToast('Gagal menyimpan kad'); }
+}
+
+async function loadCardForCurrentUser() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  try {
+    const doc = await firebase.firestore().collection('cards').doc(user.uid).get();
+    if (!doc.exists) { document.getElementById('dashboard').classList.remove('hidden'); return; }
+    const data = doc.data();
+    if (data.title) document.getElementById('cardTitle').value = data.title;
+    if (data.ucapan) document.getElementById('cardUcapan').value = data.ucapan;
+    if (data.tarikh) document.getElementById('cardTarikh').value = data.tarikh;
+    if (data.masa) document.getElementById('cardMasa').value = data.masa;
+    if (data.lokasi) document.getElementById('cardLokasi').value = data.lokasi;
+    if (Array.isArray(data.tentatif)) document.getElementById('cardTentatif').value = data.tentatif.join('\n');
+    document.getElementById('dashboard').classList.remove('hidden');
+  } catch (e) { console.error(e); }
+}
+
+// --- Live Feed purchase (placeholder) ---
+async function buyLiveFeed() {
+  const user = firebase.auth().currentUser;
+  if (!user) return showToast('Sila sign in terlebih dahulu');
+  // create a pending payment record — integrate Stripe checkout/webhook later
+  try {
+    await firebase.firestore().collection('payments').add({
+      userUid: user.uid,
+      amount: LIVE_FEED_PRICE,
+      currency: 'MYR',
+      type: 'live_feed_one_time',
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('Permintaan Live Feed direkod. Integrasikan Stripe untuk pembayaran sebenar.');
+  } catch (e) { console.error(e); showToast('Gagal memulakan pembayaran'); }
+}
+
+// --- Admin management ---
+async function checkIsAdmin(user) {
+  try {
+    const doc = await firebase.firestore().collection('meta').doc('admins').get();
+    if (!doc.exists) return false;
+    const data = doc.data();
+    const emails = data.emails || [];
+    if (user.email && emails.indexOf(user.email) !== -1) return true;
+    // allow check by uid as well
+    const uids = data.uids || [];
+    if (uids.indexOf(user.uid) !== -1) return true;
+    return false;
+  } catch (e) { console.error(e); return false; }
+}
+
+async function addAdminEmail(email) {
+  try {
+    await firebase.firestore().collection('meta').doc('admins').set({ emails: firebase.firestore.FieldValue.arrayUnion(email) }, { merge: true });
+    showToast('Email ditambah sebagai admin (jika anda mempunyai kebenaran)');
+  } catch (e) { console.error(e); showToast('Gagal menambah admin'); }
+}
 
 // --- Intersection Observer for Scroll Animations ---
 const observerOptions = { threshold: 0.1 };
