@@ -350,6 +350,76 @@ body {
 	font-weight: 600;
 }
 
+/* Watermark on slideshow images */
+.image-watermark {
+	position: absolute;
+	right: 12px;
+	bottom: 12px;
+	background: rgba(0,0,0,0.35);
+	color: #fff;
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-weight: 600;
+	z-index: 40;
+	pointer-events: none;
+}
+
+/* Modal / lightbox for viewing images */
+.image-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.8);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 400;
+	padding: 20px;
+}
+.image-modal.open { display: flex; }
+.image-modal .modal-content {
+	max-width: 92%;
+	max-height: 92%;
+	position: relative;
+}
+.image-modal img.modal-img {
+	width: 100%;
+	height: auto;
+	display: block;
+	border-radius: 12px;
+	box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.image-modal .modal-close {
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	background: #fff;
+	color: #333;
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	cursor: pointer;
+	box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+.image-modal .modal-watermark {
+	position: absolute;
+	right: 8px;
+	bottom: 8px;
+	background: rgba(0,0,0,0.35);
+	color: #fff;
+	padding: 6px 10px;
+	border-radius: 6px;
+	font-weight: 600;
+	z-index: 60;
+}
+
+@media (max-width: 480px) {
+	.image-modal .modal-close { width: 32px; height: 32px; }
+	.image-watermark { right: 8px; bottom: 8px; font-size: 9px; }
+}
+
 .reveal { opacity: 0; transform: translateY(30px); transition: all 1s ease-out; }
 .reveal.active { opacity: 1; transform: translateY(0); }
     

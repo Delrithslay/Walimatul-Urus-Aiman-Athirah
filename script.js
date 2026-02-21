@@ -464,3 +464,53 @@ document.getElementById('rsvpFormCombined').addEventListener('submit', function(
   this.reset();
 });
 
+// --- Image modal / lightbox ---
+// Create modal element dynamically to avoid editing more HTML
+const modalHtml = `
+<div id="imageModal" class="image-modal" role="dialog" aria-modal="true">
+  <div class="modal-content">
+    <button class="modal-close" id="modalClose" aria-label="Tutup">✕</button>
+    <img id="modalImage" class="modal-img" src="" alt="Momen Indah">
+    <div class="modal-watermark">#TheOnlyaiManforAthirah</div>
+  </div>
+</div>`;
+document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+const slideshowImg = document.getElementById('slideshowImage');
+const imageModal = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+const modalClose = document.getElementById('modalClose');
+
+function openImageModal(src) {
+  modalImage.src = src;
+  imageModal.classList.add('open');
+  // prevent background scroll while open
+  document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+  imageModal.classList.remove('open');
+  modalImage.src = '';
+  document.body.style.overflow = '';
+}
+
+if (slideshowImg) {
+  slideshowImg.addEventListener('click', () => {
+    const src = slideshowImg.src || '';
+    if (src) openImageModal(src);
+  });
+}
+
+modalClose.addEventListener('click', closeImageModal);
+
+// close when clicking outside image
+imageModal.addEventListener('click', (e) => {
+  if (e.target === imageModal) closeImageModal();
+});
+
+// keyboard support
+document.addEventListener('keydown', (e) => {
+  if (!imageModal.classList.contains('open')) return;
+  if (e.key === 'Escape') closeImageModal();
+});
+
