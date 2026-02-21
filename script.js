@@ -16,25 +16,6 @@ function showToast(message) {
   }, 3000);
 }
 
-// --- Firebase: anonymous auth + helper for Firestore writes ---
-async function initFirebaseAuth() {
-  if (window.firebase && firebase.auth) {
-    try {
-      await firebase.auth().signInAnonymously();
-      console.log('Firebase: signed in anonymously');
-    } catch (e) {
-      console.warn('Firebase anonymous sign-in failed:', e);
-    }
-  } else {
-    console.log('Firebase SDK not available yet');
-  }
-}
-
-// call init when page loads
-document.addEventListener('DOMContentLoaded', () => {
-  initFirebaseAuth();
-});
-
 // --- Intersection Observer for Scroll Animations ---
 const observerOptions = { threshold: 0.1 };
 const observer = new IntersectionObserver((entries) => {
@@ -46,6 +27,7 @@ const observer = new IntersectionObserver((entries) => {
 }, observerOptions);
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+// --- Intersection Observer for Scroll Animations ---
 
 // --- Magical Explosion (Butterflies & Petals) ---
 function triggerMagicalExplosion() {
@@ -419,18 +401,9 @@ function changeSlide(direction) {
 async function initImagesAndGallery() {
   const images = await findImagesInAssets();
   slideImages = images.slice();
-  // populate initial gallery images if empty
-  if (!galleryImages || galleryImages.length === 0) {
-    galleryImages = slideImages.map(src => ({ src, uploader: 'You' }));
-  } else {
-    // Prepend any discovered images that aren't already present
-    const existing = new Set(galleryImages.map(g => g.src));
-    slideImages.forEach(src => { if (!existing.has(src)) galleryImages.unshift({ src, uploader: 'You' }); });
-  }
-
-  // show first slide
-  document.getElementById('slideshowImage').src = slideImages[0] || '';
-  renderGallery();
+  // show first slide (slideshow only) — gallery/live-feed disabled
+  const slideEl = document.getElementById('slideshowImage');
+  if (slideEl) slideEl.src = slideImages[0] || '';
 }
 
 // start image discovery
@@ -472,176 +445,8 @@ function updateCountdown() {
 setInterval(updateCountdown, 1000);
 updateCountdown();
 
-// --- Gallery Pagination Logic ---
-let galleryImages = []; // start empty so live-feed shows only guest uploads or discovered assets
-        
-const itemsPerPage = 4; // 2x2 Grid per page
-let currentGalleryPage = 1;
-
-function renderGallery() {
-  const gallery = document.getElementById('photoGallery');
-  gallery.innerHTML = '';
-
-  const start = (currentGalleryPage - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  const pageItems = galleryImages.slice(start, end);
-
-  pageItems.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'photo-card bg-stone-200 toast-enter relative aspect-square shadow-md border-2 border-white rounded-xl';
-    const img = document.createElement('img');
-    img.src = item.src;
-    img.className = 'w-full h-full object-cover cursor-pointer';
-    // attach index for modal navigation
-    const globalIndex = start + pageItems.indexOf(item);
-    img.dataset.index = globalIndex;
-    img.addEventListener('click', () => openImageModal(globalIndex));
-        
-    const overlay = document.createElement('div');
-    overlay.className = 'photo-overlay';
-    overlay.innerText = `Dikongsi oleh: ${item.uploader}`;
-        
-    card.appendChild(img);
-    card.appendChild(overlay);
-    gallery.appendChild(card);
-  });
-
-  updatePaginationControls();
-}
-
-// --- Image Modal / Lightbox ---
-let _modalIndex = 0;
-function openImageModal(index) {
-  _modalIndex = index;
-  const img = document.getElementById('modalImage');
-  const caption = document.getElementById('modalCaption');
-  const entry = galleryImages[index];
-  if (!entry) return;
-  img.src = entry.src;
-  caption.innerText = entry.uploader ? `Dikongsi oleh: ${entry.uploader}` : '';
-  document.getElementById('imageModal').classList.remove('hidden');
-}
-
-function closeImageModal() {
-  document.getElementById('imageModal').classList.add('hidden');
-}
-
-function showPrevModal() {
-  if (_modalIndex > 0) _modalIndex--; else _modalIndex = galleryImages.length - 1;
-  openImageModal(_modalIndex);
-}
-
-function showNextModal() {
-  if (_modalIndex < galleryImages.length - 1) _modalIndex++; else _modalIndex = 0;
-  openImageModal(_modalIndex);
-}
-
-// Modal button hookups
-document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('imageModal');
-  if (!modal) return;
-  document.getElementById('modalClose').addEventListener('click', closeImageModal);
-  document.getElementById('modalPrev').addEventListener('click', showPrevModal);
-  document.getElementById('modalNext').addEventListener('click', showNextModal);
-  // keyboard navigation
-  document.addEventListener('keydown', (e) => {
-    if (modal.classList.contains('hidden')) return;
-    if (e.key === 'Escape') closeImageModal();
-    if (e.key === 'ArrowLeft') showPrevModal();
-    if (e.key === 'ArrowRight') showNextModal();
-  });
-});
-
-function updatePaginationControls() {
-  const totalPages = Math.ceil(galleryImages.length / itemsPerPage);
-  const controls = document.getElementById('paginationControls');
-  const btnPrev = document.getElementById('btnPrev');
-  const btnNext = document.getElementById('btnNext');
-  const pageIndicator = document.getElementById('pageIndicator');
-
-  if (totalPages > 1) {
-    controls.classList.remove('hidden');
-  } else {
-    controls.classList.add('hidden');
-  }
-
-  pageIndicator.innerText = `Page ${currentGalleryPage} of ${totalPages || 1}`;
-  btnPrev.disabled = currentGalleryPage === 1;
-  btnNext.disabled = currentGalleryPage === totalPages || totalPages === 0;
-}
-
-function prevPage() {
-  if (currentGalleryPage > 1) {
-    currentGalleryPage--;
-    renderGallery();
-  }
-}
-
-function nextPage() {
-  const totalPages = Math.ceil(galleryImages.length / itemsPerPage);
-  if (currentGalleryPage < totalPages) {
-    currentGalleryPage++;
-    renderGallery();
-  }
-}
-
-// Initialize Gallery
-renderGallery();
-
-// Reset helper: clears slideshow and gallery at runtime
-function resetImages() {
-  slideImages = [];
-  galleryImages = [];
-  const slideEl = document.getElementById('slideshowImage');
-  if (slideEl) slideEl.src = '';
-  renderGallery();
-  showToast('Gambar telah diset semula.');
-}
-
-// Apply reset now (manifest may request clear)
-// resetImages() was removing discovered/gallery images on every page load.
-// Disabled by default so user-uploaded or discovered images persist across reloads.
-// Call `resetImages()` manually only when you intentionally want to clear images.
-
-// --- Photo Upload with Validation ---
-document.getElementById('photoUpload').addEventListener('change', function(e) {
-    
-  // 1. Dapatkan nilai nama
-  const uploaderNameInput = document.getElementById('uploaderName');
-  const uploaderName = uploaderNameInput.value.trim();
-
-  // 2. Semak jika nama kosong
-  if (!uploaderName) {
-    showToast('Sila masukkan nama anda sebelum muat naik! ⚠️');
-    e.target.value = ''; // Reset input file supaya user boleh pilih semula selepas isi nama
-    uploaderNameInput.focus();
-    return; // Berhenti di sini, jangan proses gambar
-  }
-
-  const file = e.target.files[0];
-    
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      // Add new image to the beginning of the array
-      galleryImages.unshift({
-        src: event.target.result,
-        uploader: uploaderName
-      });
-            
-      // Reset to first page to see new upload
-      currentGalleryPage = 1;
-      renderGallery();
-            
-      document.getElementById('galeri').scrollIntoView({ behavior: 'smooth' });
-      showToast('Gambar berjaya dikongsi! 📸');
-            
-      // Clear input
-      uploaderNameInput.value = '';
-    }
-    reader.readAsDataURL(file);
-  }
-});
+// Live feed / gallery upload features removed: guest image upload and on-site gallery disabled.
+// Slideshow asset discovery and slideshow functionality remain unchanged.
 
 // --- RSVP Combined ---
 document.getElementById('rsvpFormCombined').addEventListener('submit', function(e) {
@@ -656,25 +461,6 @@ document.getElementById('rsvpFormCombined').addEventListener('submit', function(
   document.getElementById('wishesContainer').prepend(card);
     
   showToast(`Terima kasih ${name}! Jumpa nanti! ✨`);
-  // attempt to store RSVP in Firestore
-  try {
-    if (window.firebase && firebase.firestore) {
-      const doc = {
-        name: name || null,
-        wish: wish || null,
-        count: parseInt(count) || 0,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      firebase.firestore().collection('rsvps').add(doc)
-        .then(() => console.log('RSVP saved to Firestore'))
-        .catch(err => console.warn('Failed to save RSVP to Firestore:', err));
-    } else {
-      console.warn('Firestore SDK not available; RSVP not saved to DB.');
-    }
-  } catch (err) {
-    console.error('Error storing RSVP:', err);
-  }
-
   this.reset();
 });
 
