@@ -54,6 +54,24 @@ function setupAuthUI() {
     addAdminEmail(email);
   });
 
+  // main-page register/login buttons
+  const btnRegisterMain = document.getElementById('btnRegisterMain');
+  const btnLoginMain = document.getElementById('btnLoginMain');
+  const btnGoogleMain = document.getElementById('btnGoogleMain');
+  if (btnRegisterMain) btnRegisterMain.addEventListener('click', () => {
+    const email = document.getElementById('registerEmail').value.trim();
+    const pass = document.getElementById('registerPass').value;
+    if (!email || !pass) return showToast('Sila isi email dan password');
+    registerWithEmail(email, pass);
+  });
+  if (btnLoginMain) btnLoginMain.addEventListener('click', () => {
+    const email = document.getElementById('registerEmail').value.trim();
+    const pass = document.getElementById('registerPass').value;
+    if (!email || !pass) return showToast('Sila isi email dan password');
+    loginWithEmail(email, pass);
+  });
+  if (btnGoogleMain) btnGoogleMain.addEventListener('click', signInWithGoogle);
+
   // monitor auth state
   if (firebase && firebase.auth) {
     firebase.auth().onAuthStateChanged(async (user) => {
@@ -84,7 +102,7 @@ function setupAuthUI() {
 }
 
 function openAuthModal() {
-  // simple prompt-based sign-in for now (email/password + google)
+  // keep legacy prompt fallback
   const choice = confirm('Sign in with Google? Click Cancel to use Email/Password.');
   if (choice) {
     signInWithGoogle();
@@ -92,20 +110,27 @@ function openAuthModal() {
     const email = prompt('Email:');
     const pass = prompt('Password:');
     if (!email || !pass) return showToast('Email & password required');
-    // attempt sign in, if fails offer to create account
-    firebase.auth().signInWithEmailAndPassword(email, pass).then(() => showToast('Signed in'))
-      .catch(async (err) => {
-        const create = confirm('Sign-in failed. Create account with these credentials?');
-        if (create) {
-          try {
-            await firebase.auth().createUserWithEmailAndPassword(email, pass);
-            showToast('Account created and signed in');
-          } catch (e) { showToast('Failed to create account'); console.warn(e); }
-        } else {
-          console.warn(err);
-        }
-      });
+    loginWithEmail(email, pass);
   }
+}
+
+async function registerWithEmail(email, password) {
+  try {
+    await firebase.auth().createUserWithEmailAndPassword(email, password);
+    showToast('Akaun dicipta. Anda kini log masuk.');
+    // after registration, show dashboard
+    document.getElementById('dashboard').classList.remove('hidden');
+    window.location.hash = 'dashboard';
+  } catch (e) { console.error(e); showToast('Gagal mendaftar: ' + (e.message || '')); }
+}
+
+async function loginWithEmail(email, password) {
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, password);
+    showToast('Berjaya log masuk');
+    document.getElementById('dashboard').classList.remove('hidden');
+    window.location.hash = 'dashboard';
+  } catch (e) { console.error(e); showToast('Gagal log masuk: ' + (e.message || '')); }
 }
 
 async function signInWithGoogle() {
