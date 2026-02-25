@@ -477,5 +477,17 @@ document.getElementById('rsvpFormCombined').addEventListener('submit', async fun
   }
 });
 
+// Expose commonly-used functions to the global `window` so inline HTML
+// `onclick` attributes continue to work when this script is loaded as a module.
+// Inline handlers in `index.html` call `openInvitation()`, `toggleMusic()` and
+// `changeSlide(...)` so expose those here.
+try {
+  window.openInvitation = openInvitation;
+  window.toggleMusic = toggleMusic;
+  window.changeSlide = changeSlide;
+} catch (e) {
+  // If `window` is not writable for some reason, silently ignore.
+}
+
 // Image viewer functionality removed — clicking slideshow no longer opens a modal.
 
