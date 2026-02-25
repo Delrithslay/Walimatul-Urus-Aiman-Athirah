@@ -449,19 +449,32 @@ updateCountdown();
 // Slideshow asset discovery and slideshow functionality remain unchanged.
 
 // --- RSVP Combined ---
-document.getElementById('rsvpFormCombined').addEventListener('submit', function(e) {
+import { saveRSVP } from './firebase-init.js';
+
+document.getElementById('rsvpFormCombined').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const name = document.getElementById('rsvpName').value;
-  const wish = document.getElementById('rsvpWish').value;
+  const name = document.getElementById('rsvpName').value.trim();
+  const wish = document.getElementById('rsvpWish').value.trim();
   const count = document.getElementById('rsvpCount').value;
 
+  // Optimistically add to UI
   const card = document.createElement('div');
   card.className = 'bg-pink-50 p-4 md:p-5 rounded-2xl border border-pink-100 mb-4 toast-enter shadow-sm';
   card.innerHTML = `<p class="font-bold text-amber-800 text-[11px] md:text-sm">${name} (${count} pax)</p><p class="text-stone-600 mt-1 italic text-[10px] md:text-xs leading-relaxed">"${wish}"</p>`;
   document.getElementById('wishesContainer').prepend(card);
-    
-  showToast(`Terima kasih ${name}! Jumpa nanti! ✨`);
-  this.reset();
+
+  showToast(`Mencuba menyimpan maklum balas anda...`);
+
+  try {
+    const res = await saveRSVP({ name, count, wish });
+    showToast(`Terima kasih ${name}! Maklum balas disimpan (id: ${res.id}).`);
+    this.reset();
+  } catch (err) {
+    console.error('Failed saving RSVP:', err);
+    showToast('Terdapat masalah menyimpan maklum balas — cuba lagi.');
+    // leave the optimistic card so user doesn't lose text; optionally mark failed
+    card.classList.add('opacity-60');
+  }
 });
 
 // Image viewer functionality removed — clicking slideshow no longer opens a modal.
