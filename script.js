@@ -244,6 +244,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 });
 
+// Attach event listener to the invitation button (works even if inline onclick isn't available)
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('openInvitationBtn');
+  if (btn) btn.addEventListener('click', openInvitation);
+});
+
 // --- Audio Logic ---
 const audio = document.getElementById('bgMusic');
 const musicIcon = document.getElementById('musicIcon');
