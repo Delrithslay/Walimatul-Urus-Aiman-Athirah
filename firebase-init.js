@@ -1,7 +1,7 @@
 // Firebase initialization (loaded as an ES module via CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
-import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 // Firebase configuration (from provided snippet)
 const firebaseConfig = {
@@ -43,6 +43,20 @@ async function saveRSVP({ name, count, wish }) {
 }
 
 export { app, db, saveRSVP };
+
+// Delete RSVP helper
+async function deleteRSVP(id) {
+  if (!id) throw new Error('No id provided');
+  try {
+    await deleteDoc(doc(db, 'rsvps', id));
+    return true;
+  } catch (err) {
+    console.error('deleteRSVP error', err);
+    throw err;
+  }
+}
+
+export { fetchRSVPs, deleteRSVP };
 
 // Fetch recent RSVPs helper
 async function fetchRSVPs({ limit = 100 } = {}) {

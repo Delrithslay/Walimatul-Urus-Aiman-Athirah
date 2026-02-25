@@ -258,10 +258,29 @@ document.addEventListener('DOMContentLoaded', () => {
       items.forEach(item => {
         const card = document.createElement('div');
         card.className = 'bg-pink-50 p-4 md:p-5 rounded-2xl border border-pink-100 mb-4 shadow-sm';
+        if (item.id) card.dataset.id = item.id;
         const name = item.name || 'Tetamu';
         const count = item.count || 1;
         const wish = item.wish || '';
         card.innerHTML = `<p class="font-bold text-amber-800 text-[11px] md:text-sm">${name} (${count} pax)</p><p class="text-stone-600 mt-1 italic text-[10px] md:text-xs leading-relaxed">"${wish}"</p>`;
+        // Add delete button for existing items
+        if (item.id) {
+          const delBtn = document.createElement('button');
+          delBtn.className = 'rsvp-delete-btn text-xs text-red-600 hover:underline mt-2';
+          delBtn.textContent = 'Padam';
+          delBtn.addEventListener('click', async () => {
+            if (!confirm('Padam ucapan ini?')) return;
+            try {
+              await deleteRSVP(item.id);
+              card.remove();
+              showToast('Ucapan dipadam');
+            } catch (err) {
+              console.error('delete failed', err);
+              showToast('Gagal memadam ucapan');
+            }
+          });
+          card.appendChild(delBtn);
+        }
         container.prepend(card);
       });
     } catch (e) {
@@ -475,7 +494,7 @@ updateCountdown();
 // Slideshow asset discovery and slideshow functionality remain unchanged.
 
 // --- RSVP Combined ---
-import { saveRSVP, fetchRSVPs } from './firebase-init.js';
+import { saveRSVP, fetchRSVPs, deleteRSVP } from './firebase-init.js';
 
 document.getElementById('rsvpFormCombined').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -493,6 +512,27 @@ document.getElementById('rsvpFormCombined').addEventListener('submit', async fun
 
   try {
     const res = await saveRSVP({ name, count, wish });
+    // attach delete button to saved card
+    try {
+      card.dataset.id = res.id;
+      const delBtn = document.createElement('button');
+      delBtn.className = 'rsvp-delete-btn text-xs text-red-600 hover:underline mt-2';
+      delBtn.textContent = 'Padam';
+      delBtn.addEventListener('click', async () => {
+        if (!confirm('Padam ucapan ini?')) return;
+        try {
+          await deleteRSVP(res.id);
+          card.remove();
+          showToast('Ucapan dipadam');
+        } catch (err) {
+          console.error('delete failed', err);
+          showToast('Gagal memadam ucapan');
+        }
+      });
+      card.appendChild(delBtn);
+    } catch (e) {
+      console.warn('Could not attach delete button', e);
+    }
     showToast(`Terima kasih ${name}! Maklum balas disimpan (id: ${res.id}).`);
     this.reset();
   } catch (err) {
