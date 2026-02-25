@@ -1,7 +1,7 @@
 // Firebase initialization (loaded as an ES module via CDN)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 // Firebase configuration (from provided snippet)
 const firebaseConfig = {
@@ -43,3 +43,21 @@ async function saveRSVP({ name, count, wish }) {
 }
 
 export { app, db, saveRSVP };
+
+// Fetch recent RSVPs helper
+async function fetchRSVPs({ limit = 100 } = {}) {
+  try {
+    const q = query(collection(db, 'rsvps'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    const items = [];
+    snap.forEach(doc => {
+      items.push({ id: doc.id, ...doc.data() });
+    });
+    return items.slice(0, limit);
+  } catch (err) {
+    console.error('fetchRSVPs error', err);
+    return [];
+  }
+}
+
+export { fetchRSVPs };

@@ -248,6 +248,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('openInvitationBtn');
   if (btn) btn.addEventListener('click', openInvitation);
+  // Load existing RSVPs and render them on the wishes wall
+  (async () => {
+    try {
+      const items = await fetchRSVPs({ limit: 200 });
+      const container = document.getElementById('wishesContainer');
+      if (!container || !items || items.length === 0) return;
+      // Insert fetched items (newest first)
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'bg-pink-50 p-4 md:p-5 rounded-2xl border border-pink-100 mb-4 shadow-sm';
+        const name = item.name || 'Tetamu';
+        const count = item.count || 1;
+        const wish = item.wish || '';
+        card.innerHTML = `<p class="font-bold text-amber-800 text-[11px] md:text-sm">${name} (${count} pax)</p><p class="text-stone-600 mt-1 italic text-[10px] md:text-xs leading-relaxed">"${wish}"</p>`;
+        container.prepend(card);
+      });
+    } catch (e) {
+      console.warn('Could not load RSVPs:', e);
+    }
+  })();
 });
 
 // --- Audio Logic ---
@@ -455,7 +475,7 @@ updateCountdown();
 // Slideshow asset discovery and slideshow functionality remain unchanged.
 
 // --- RSVP Combined ---
-import { saveRSVP } from './firebase-init.js';
+import { saveRSVP, fetchRSVPs } from './firebase-init.js';
 
 document.getElementById('rsvpFormCombined').addEventListener('submit', async function(e) {
   e.preventDefault();
