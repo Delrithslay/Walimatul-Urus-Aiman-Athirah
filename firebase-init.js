@@ -56,7 +56,8 @@ async function deleteRSVP(id) {
   }
 }
 
-export { fetchRSVPs, deleteRSVP };
+// Note: `fetchRSVPs` is defined below, so export after its declaration to
+// avoid a reference error during module parsing.
 
 // Fetch recent RSVPs helper
 async function fetchRSVPs({ limit = 100 } = {}) {
@@ -74,4 +75,5 @@ async function fetchRSVPs({ limit = 100 } = {}) {
   }
 }
 
-export { fetchRSVPs };
+// Export helpers after all functions are declared
+export { fetchRSVPs, deleteRSVP };
